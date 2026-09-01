@@ -37,3 +37,24 @@ st.header("HOD Dashboard (Demo)")
 chart_data = pd.DataFrame(np.random.randint(60, 100, size=(10, 1)), columns=['Attendance'])
 st.bar_chart(chart_data)
 st.caption("Intha chart HOD ku students overall performance paarka")
+import streamlit as st
+
+# --- LOGIN PART ---
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.title("🔐 Login Pannu")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    
+    if st.button("Login"):
+        if username == "admin" and password == "admin123":
+            st.session_state.logged_in = True
+            st.success("Login Success! Loading...")
+            st.rerun()
+        else:
+            st.error("Username / Password thappu da!")
+    st.stop() # Login pannama ulla vara mudiyathu
+# --- LOGIN MUDINJIDUCHU ---
+
