@@ -104,3 +104,29 @@ elif menu == "Performance Prediction":
             st.error("⚠️ At Risk - Need Counselling")
         else:
             st.success("✅ Good Performance - On Track")
+            elif menu == "Performance Prediction":
+    st.header("📊 Student Mark Prediction")
+
+    # Student name select panna
+    student_name = st.selectbox("Student Name ah select pannu", 
+                                ["Sharmila", "Priya", "Keerthi", "Divya"])
+
+    # Input edukkura edam
+    attendance = st.slider("Attendance %", 0, 100, 75)
+    internal_mark = st.slider("Internal Mark (out of 50)", 0, 50, 35)
+    study_hours = st.slider("Daily Study Hours", 0, 10, 3)
+
+    if st.button("Predict Mark"):
+        # Simple prediction formula - ML model ku pathila
+        predicted_mark = (attendance * 0.3) + (internal_mark * 1.2) + (study_hours * 5)
+        
+        if predicted_mark > 100:
+            predicted_mark = 95
+
+        st.success(f"✅ {student_name} oda Predicted Mark: {predicted_mark:.1f} / 100")
+        
+        if predicted_mark >= 60:
+            st.balloons()
+            st.write("🎉 Pass aayiduvanga!")
+        else:
+            st.warning("⚠️ Konjam extra coaching venum")
