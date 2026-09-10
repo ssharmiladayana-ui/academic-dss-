@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from PIL import Image
+import random
 
 st.set_page_config(page_title="GONZAGA DSS", page_icon="🎓", layout="wide")
 
@@ -9,7 +10,6 @@ st.set_page_config(page_title="GONZAGA DSS", page_icon="🎓", layout="wide")
 st.markdown("""
 <style>
 .stApp { background: linear-gradient(135deg, #f4ecf7, #d2b4de); }
-.login-bg { background: linear-gradient(135deg, #5b2c6f, #8e44ad); padding: 40px 0; }
 .login-card {
     background: white;
     padding: 30px;
@@ -30,7 +30,6 @@ if not st.session_state.logged_in:
             st.image("logo.png")
         except:
             st.markdown("<h1 style='text-align:center; color:#4a235a;'>🎓 GONZAGA COLLEGE</h1>", unsafe_allow_html=True)
-        
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
         st.markdown("<h3 style='text-align:center;color:#4a235a;'>GONZAGA COLLEGE OF ARTS AND SCIENCE FOR WOMEN</h3><p style='text-align:center;'>Academic Decision Support System</p>", unsafe_allow_html=True)
         user = st.text_input("Username")
@@ -44,7 +43,7 @@ if not st.session_state.logged_in:
         st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
-# --- AFTER LOGIN - MAIN PROJECT ---
+# --- AFTER LOGIN ---
 with st.sidebar:
     try:
         st.image("logo.png", width=200)
@@ -63,13 +62,11 @@ st.subheader("GONZAGA COLLEGE OF ARTS AND SCIENCE FOR WOMEN")
 
 if menu == "Dashboard":
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Students", "350", "12")
+    col1.metric("Total Students", "500", "150")
     col2.metric("Pass %", "89%", "5%")
     col3.metric("Avg CGPA", "7.8", "0.3")
-    col4.metric("Placements", "120", "15")
-    
+    col4.metric("At-Risk", "45", "-5")
     st.divider()
-    # Sample data
     data = pd.DataFrame({
         "Department": ["CS", "BCA", "Maths", "Commerce", "English"],
         "Pass Percentage": [92, 88, 85, 90, 87]
@@ -78,91 +75,81 @@ if menu == "Dashboard":
     st.plotly_chart(fig, use_container_width=True)
 
 elif menu == "Student Analysis":
-    st.write("Upload Student Data CSV or view sample analysis")
-    uploaded = st.file_uploader("Upload CSV", type=["csv"])
-    if uploaded:
-        df = pd.read_csv(uploaded)
-        st.dataframe(df)
-    else:
-        sample_df = pd.DataFrame({
-            "Name": ["Priya", "Anu", "Divya", "Lakshmi", "Kavya"],
-            "Dept": ["CS", "CS", "BCA", "Commerce", "Maths"],
-            "CGPA": [8.5, 7.2, 9.0, 8.0, 7.8],
-            "Attendance": [95, 88, 92, 85, 90]
-        })
-        st.dataframe(sample_df)
-        fig2 = px.scatter(sample_df, x="Attendance", y="CGPA", color="Dept", size="CGPA", hover_name="Name", title="Attendance vs CGPA")
-        st.plotly_chart(fig2)
+    st.header("📈 Student Analysis")
+    try:
+        df_main = pd.read_csv("students.csv")
+        st.dataframe(df_main.head(100), use_container_width=True)
+        fig2 = px.scatter(df_main, x="attendance", y="sem2_gpa", color="dropout_risk", hover_name="student_id", title="Attendance vs Sem2 GPA (Red=At Risk)")
+        st.plotly_chart(fig2, use_container_width=True)
+    except:
+        st.info("Upload CSV in Student Analysis")
+        uploaded = st.file_uploader("Upload CSV", type=["csv"])
+        if uploaded:
+            df = pd.read_csv(uploaded)
+            st.dataframe(df)
 
 elif menu == "Performance Prediction":
-    st.info("AI based prediction for at-risk students")
-    st.write("Enter student details:")
-    cgpa = st.slider("Current CGPA", 0.0, 10.0, 7.5)
-    att = st.slider("Attendance %", 0, 100, 85)
-    if st.button("Predict"):
-        if cgpa < 6 or att < 75:
-            st.error("⚠️ At Risk - Need Counselling")
-        else:
-            st.success("✅ Good Performance - On Track")
-            elif menu == "Performance Prediction":
-    st.header("📊 Student Mark Prediction")
-
-    # Student name select panna
-    student_name = st.selectbox("Student Name ah select pannu", 
-                                ["Sharmila", "Priya", "Keerthi", "Divya"])
-
-    # Input edukkura edam
-    attendance = st.slider("Attendance %", 0, 100, 75)
-    internal_mark = st.slider("Internal Mark (out of 50)", 0, 50, 35)
-    study_hours = st.slider("Daily Study Hours", 0, 10, 3)
-
-    if st.button("Predict Mark"):
-        # Simple prediction formula - ML model ku pathila
-        predicted_mark = (attendance * 0.3) + (internal_mark * 1.2) + (study_hours * 5)
-        
-        if predicted_mark > 100:
-            predicted_mark = 95
-
-        st.success(f"✅ {student_name} oda Predicted Mark: {predicted_mark:.1f} / 100")
-        
-        if predicted_mark >= 60:
-            st.balloons()
-            st.write("🎉 Pass aayiduvanga!")
-        else:
-            st.warning("⚠️ Konjam extra coaching venum")
-            elif menu == "Performance Prediction":
-    st.header("🎯 350 Students Prediction")
-    import pandas as pd
-    import random
+    st.header("🎯 Performance Prediction - 500 Students")
 
     try:
-        # WPS Excel file ah padikka
-        df = pd.read_excel("students.xlsx") # un file name.xlsx nu iruntha
-        st.success(f"✅ {len(df)} students load aayiduchu! WPS file than!")
+        df = pd.read_csv("students.csv")
+        st.success(f"✅ {len(df)} Students data ready! (STU001 to STU{len(df)})")
 
-        # Random ah eduthu kaamikura
-        if st.button("🎲 Random Student ahh Predict pannu", use_container_width=True):
-            row = df.sample(1).iloc[0]
-            name = str(row.iloc[0]) # first column la name irukkum
+        tab1, tab2 = st.tabs(["🎲 Random Student", "🔍 Search by ID"])
 
-            st.success(f"**Student: {name}**")
-            st.write(row) # full details kaamikura
+        with tab1:
+            if st.button("Random Student ah Predict pannu", use_container_width=True):
+                row = df.sample(1).iloc[0]
 
-            # Mark predict
-            pred = random.randint(55, 98)
-            st.metric("Predicted Final Mark", f"{pred}/100")
-            st.progress(pred)
+                # Real prediction logic based on your data
+                sem_avg = (row['sem1_gpa'] + row['sem2_gpa']) / 2
+                pred_gpa = (sem_avg * 0.7) + (row['attendance']/100 * 2) - (row['backlogs']*0.5)
+                if pred_gpa > 10: pred_gpa = 9.8
+                if pred_gpa < 0: pred_gpa = 4.0
 
-        st.divider()
-        # Search pannura option
-        student_list = df.iloc[:,0].astype(str).tolist() # first column la ellam name
-        selected = st.selectbox(f"350 per la oruthara thedu ({len(student_list)} students)", student_list)
+                st.success(f"**Student ID: {row['student_id']}**")
 
-        if selected:
-            student_data = df[df.iloc[:,0].astype(str) == selected].iloc[0]
-            st.write("**Avanga Details:**")
-            st.dataframe(student_data)
+                c1,c2,c3,c4 = st.columns(4)
+                c1.metric("10th Marks", row['10th_marks'])
+                c2.metric("12th Marks", row['12th_marks'])
+                c3.metric("Sem1 GPA", row['sem1_gpa'])
+                c4.metric("Sem2 GPA", row['sem2_gpa'])
 
-    except Exception as e:
-        st.error(f"File kedaikala da: {e}")
-        st.info("students.xlsx file ah GitHub la upload panniya nu check pannu")
+                c5,c6,c7 = st.columns(3)
+                c5.metric("Attendance", f"{row['attendance']}%")
+                c6.metric("Backlogs", row['backlogs'])
+                c7.metric("Dropout Risk", "YES 🔴" if row['dropout_risk']==1 else "NO 🟢")
+
+                st.divider()
+                st.metric("🔮 Predicted Final GPA", f"{pred_gpa:.2f} / 10.0")
+                st.progress(int((pred_gpa/10)*100))
+
+                if row['dropout_risk'] == 1 or pred_gpa < 6:
+                    st.error(f"⚠️ {row['student_id']} - At-Risk Student! Counselling venum")
+                else:
+                    st.balloons()
+                    st.success("✅ Good Performance - On Track")
+
+        with tab2:
+            student_ids = df['student_id'].astype(str).tolist()
+            selected = st.selectbox(f"Student ID select pannu (500 students)", student_ids)
+
+            if selected:
+                found = df[df['student_id'].astype(str) == selected].iloc[0]
+                st.dataframe(found.to_frame().T, use_container_width=True)
+
+                sem_avg = (found['sem1_gpa'] + found['sem2_gpa']) / 2
+                pred_gpa = (sem_avg * 0.7) + (found['attendance']/100 * 2) - (found['backlogs']*0.5)
+                if pred_gpa > 10: pred_gpa = 9.8
+
+                st.metric(f"🔮 {selected} oda Predicted Final GPA", f"{pred_gpa:.2f}/10")
+
+                if found['dropout_risk'] == 1:
+                    st.error("⚠️ Dropout Risk irukku - Special attention kudu")
+                else:
+                    st.success("✅ Safe - No dropout risk")
+
+    except FileNotFoundError:
+        st.error("❌ students.csv file GitHub la illa da!")
+        st.info("Neenga anupuna CSV.csv file ah GitHub la 'students.csv' nu rename panni upload pannu da")
+        st.code("CSV.csv -> students.csv")
