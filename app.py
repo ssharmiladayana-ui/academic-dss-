@@ -89,23 +89,16 @@ elif menu == "Student Analysis":
             st.dataframe(df)
 
 elif menu == "Performance Prediction":
-    st.header("🎯 Performance Prediction - 500 Students")
-
+    st.header("🎯 Performance Prediction - Student ID Based")
     try:
         df = pd.read_csv("students.csv")
-        st.success(f"✅ {len(df)} Students data ready! (STU001 to STU{len(df)})")
+        st.success(f"✅ {len(df)} Students Ready! (STU001 - STU{len(df)})")
 
-        tab1, tab2 = st.tabs(["🎲 Random Student", "🔍 Search by ID"])
+        tab1, tab2 = st.tabs(["🎲 Random Student", "🔍 Search by Student ID"])
 
         with tab1:
-            if st.button("Random Student ah Predict pannu", use_container_width=True):
+            if st.button("Random Student ID eduthu Predict pannu", use_container_width=True, type="primary"):
                 row = df.sample(1).iloc[0]
-
-                # Real prediction logic based on your data
-                sem_avg = (row['sem1_gpa'] + row['sem2_gpa']) / 2
-                pred_gpa = (sem_avg * 0.7) + (row['attendance']/100 * 2) - (row['backlogs']*0.5)
-                if pred_gpa > 10: pred_gpa = 9.8
-                if pred_gpa < 0: pred_gpa = 4.0
 
                 st.success(f"**Student ID: {row['student_id']}**")
 
@@ -118,38 +111,44 @@ elif menu == "Performance Prediction":
                 c5,c6,c7 = st.columns(3)
                 c5.metric("Attendance", f"{row['attendance']}%")
                 c6.metric("Backlogs", row['backlogs'])
-                c7.metric("Dropout Risk", "YES 🔴" if row['dropout_risk']==1 else "NO 🟢")
+                c7.metric("Risk", "YES 🔴" if row['dropout_risk']==1 else "NO 🟢")
+
+                sem_avg = (row['sem1_gpa'] + row['sem2_gpa'])/2
+                pred = (sem_avg * 0.7) + (row['attendance']/100 * 2) - (row['backlogs']*0.5)
+                if pred > 10: pred = 9.8
+                if pred < 0: pred = 4.0
 
                 st.divider()
-                st.metric("🔮 Predicted Final GPA", f"{pred_gpa:.2f} / 10.0")
-                st.progress(int((pred_gpa/10)*100))
+                st.metric("🔮 Predicted Final GPA", f"{pred:.2f} / 10.0")
+                st.progress(int((pred/10)*100))
 
-                if row['dropout_risk'] == 1 or pred_gpa < 6:
-                    st.error(f"⚠️ {row['student_id']} - At-Risk Student! Counselling venum")
+                if row['dropout_risk'] == 1 or pred < 6:
+                    st.error(f"⚠️ {row['student_id']} - At-Risk! Counselling venum")
                 else:
                     st.balloons()
                     st.success("✅ Good Performance - On Track")
 
         with tab2:
             student_ids = df['student_id'].astype(str).tolist()
-            selected = st.selectbox(f"Student ID select pannu (500 students)", student_ids)
+            selected = st.selectbox(f"Student ID select pannu ({len(student_ids)} IDs)", student_ids)
 
             if selected:
                 found = df[df['student_id'].astype(str) == selected].iloc[0]
+                st.write(f"**{selected} Details:**")
                 st.dataframe(found.to_frame().T, use_container_width=True)
 
-                sem_avg = (found['sem1_gpa'] + found['sem2_gpa']) / 2
-                pred_gpa = (sem_avg * 0.7) + (found['attendance']/100 * 2) - (found['backlogs']*0.5)
-                if pred_gpa > 10: pred_gpa = 9.8
+                sem_avg = (found['sem1_gpa'] + found['sem2_gpa'])/2
+                pred = (sem_avg * 0.7) + (found['attendance']/100 * 2) - (found['backlogs']*0.5)
+                if pred > 10: pred = 9.8
 
-                st.metric(f"🔮 {selected} oda Predicted Final GPA", f"{pred_gpa:.2f}/10")
+                st.metric(f"🔮 {selected} Predicted GPA", f"{pred:.2f} / 10")
 
                 if found['dropout_risk'] == 1:
-                    st.error("⚠️ Dropout Risk irukku - Special attention kudu")
+                    st.error("⚠️ Dropout Risk irukku")
                 else:
-                    st.success("✅ Safe - No dropout risk")
+                    st.success("✅ Safe")
 
     except FileNotFoundError:
         st.error("❌ students.csv file GitHub la illa da!")
-        st.info("Neenga anupuna CSV.csv file ah GitHub la 'students.csv' nu rename panni upload pannu da")
-        st.code("CSV.csv -> students.csv")
+    except Exception as e:
+        st.error(f"Error: {e}")
