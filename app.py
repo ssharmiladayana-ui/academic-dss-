@@ -130,3 +130,39 @@ elif menu == "Performance Prediction":
             st.write("🎉 Pass aayiduvanga!")
         else:
             st.warning("⚠️ Konjam extra coaching venum")
+            elif menu == "Performance Prediction":
+    st.header("🎯 350 Students Prediction")
+    import pandas as pd
+    import random
+
+    try:
+        # WPS Excel file ah padikka
+        df = pd.read_excel("students.xlsx") # un file name.xlsx nu iruntha
+        st.success(f"✅ {len(df)} students load aayiduchu! WPS file than!")
+
+        # Random ah eduthu kaamikura
+        if st.button("🎲 Random Student ahh Predict pannu", use_container_width=True):
+            row = df.sample(1).iloc[0]
+            name = str(row.iloc[0]) # first column la name irukkum
+
+            st.success(f"**Student: {name}**")
+            st.write(row) # full details kaamikura
+
+            # Mark predict
+            pred = random.randint(55, 98)
+            st.metric("Predicted Final Mark", f"{pred}/100")
+            st.progress(pred)
+
+        st.divider()
+        # Search pannura option
+        student_list = df.iloc[:,0].astype(str).tolist() # first column la ellam name
+        selected = st.selectbox(f"350 per la oruthara thedu ({len(student_list)} students)", student_list)
+
+        if selected:
+            student_data = df[df.iloc[:,0].astype(str) == selected].iloc[0]
+            st.write("**Avanga Details:**")
+            st.dataframe(student_data)
+
+    except Exception as e:
+        st.error(f"File kedaikala da: {e}")
+        st.info("students.xlsx file ah GitHub la upload panniya nu check pannu")
